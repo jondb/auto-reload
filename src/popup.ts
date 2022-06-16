@@ -10,7 +10,10 @@ async function attachToButton() {
   }
   elReset.addEventListener("click", reset);
   elStart.addEventListener("click", startReloading);
-  let currentTab = await chrome.tabs.getSelected();
+  let currentTab = (
+    await chrome.tabs.query({ active: true, lastFocusedWindow: true })
+  )[0];
+  // let currentTab = await chrome.tabs.getSelected();
   let state = await chrome.storage.local.get("timers");
   // data = state; tab = currentTab
   // (<HTMLInputElement>document.getElementById(elementId)).value

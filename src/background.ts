@@ -22,29 +22,35 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   updateBadge();
 });
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(async function (
+  request,
+  sender,
+  sendResponse
+) {
   if (request.type !== "reload" || !request) return;
 
-  chrome.tabs.query({ currentWindow: true, active: true }, function (tab) {
-    var tabid = tab[0].id || 0;
+  let currentTab = (
+    await chrome.tabs.query({ active: true, lastFocusedWindow: true })
+  )[0];
 
-    function reloadFunction() {
-      chrome.tabs.update(tabid, { url: request.targetURL });
-    }
+  var tabid = currentTab.id || 0;
 
-    var t = setInterval(reloadFunction, request.reloadTime);
-    var page = {
-      timer: t,
-      targetURL: request.targetURL,
-      reloadTime: request.reloadTime,
-      tab: tabid,
-    };
-    chrome.storage.local.get("timers", function (data) {
-      data.timers.push(page);
-      chrome.storage.local.set(data, function () {
-        reloadFunction();
-        updateBadge();
-      });
+  function reloadFunction() {
+    chrome.tabs.update(tabid, { url: request.targetURL });
+  }
+
+  var t = setInterval(reloadFunction, request.reloadTime);
+  var page = {
+    timer: t,
+    targetURL: request.targetURL,
+    reloadTime: request.reloadTime,
+    tab: tabid,
+  };
+  chrome.storage.local.get("timers", function (data) {
+    data.timers.push(page);
+    chrome.storage.local.set(data, function () {
+      reloadFunction();
+      updateBadge();
     });
   });
 });
