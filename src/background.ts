@@ -1,25 +1,21 @@
 chrome.storage.local.set({ timers: [] });
 
-function updateBadge() {
-  chrome.tabs.query({}, function (tabs) {
-    chrome.storage.local.get("timers", function (data) {
-      var timers = data.timers;
-      var message = timers.length > 0 ? String(timers.length) : "";
-
-      for (var i = 0; i < tabs.length; i++) {
-        var tabid = tabs[i].id;
-        chrome.action.setBadgeText({
-          text: message,
-          tabId: tabid,
-        });
-      }
-    });
-  });
+async function updateBadge() {
+  let allTabs = await chrome.tabs.query({});
+  let state = await chrome.storage.local.get("timers");
+  let message = state.timers.length > 0 ? String(state.timers.length) : "";
+  for (let tab of allTabs) {
+    await chrome.action.setBadgeText({ text: message, tabId: tab.id });
+  }
 }
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(async function (
+  request,
+  sender,
+  sendResponse
+) {
   if (request.type !== "showcount") return;
-  updateBadge();
+  await updateBadge();
 });
 
 chrome.runtime.onMessage.addListener(async function (
@@ -35,8 +31,8 @@ chrome.runtime.onMessage.addListener(async function (
 
   var tabid = currentTab.id || 0;
 
-  function reloadFunction() {
-    chrome.tabs.update(tabid, { url: request.targetURL });
+  async function reloadFunction() {
+    await chrome.tabs.update(tabid, { url: request.targetURL });
   }
 
   var t = setInterval(reloadFunction, request.reloadTime);
@@ -46,26 +42,27 @@ chrome.runtime.onMessage.addListener(async function (
     reloadTime: request.reloadTime,
     tab: tabid,
   };
-  chrome.storage.local.get("timers", function (data) {
-    data.timers.push(page);
-    chrome.storage.local.set(data, function () {
-      reloadFunction();
-      updateBadge();
-    });
-  });
+  let state = await chrome.storage.local.get("timers");
+
+  state.timers.push(page);
+  await chrome.storage.local.set(state);
+
+  await reloadFunction();
+  await updateBadge();
 });
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(async function (
+  request,
+  sender,
+  sendResponse
+) {
   if (request.type !== "reset") return;
 
-  chrome.storage.local.get("timers", function (data) {
-    var timers = data.timers;
-    for (var i = timers.length - 1; i >= 0; i--) {
-      clearInterval(timers[i].timer);
-      timers.pop();
-    }
-    chrome.storage.local.set({ timers: timers }, function () {
-      updateBadge();
-    });
-  });
+  let state = await chrome.storage.local.get("timers");
+  await chrome.storage.local.set({ timers: [] });
+
+  for (let t of state.timers) {
+    clearInterval(t.timer);
+  }
+  await updateBadge();
 });

@@ -26,12 +26,12 @@ async function attachToButton() {
   }
 }
 
-function reset() {
-  chrome.runtime.sendMessage({ type: "reset" });
+async function reset() {
+  await chrome.runtime.sendMessage({ type: "reset" });
   window.close();
 }
 
-function startReloading() {
+async function startReloading() {
   let elMessage = document.getElementById("message");
   let elTarget = document.getElementById("targetURL") as HTMLInputElement;
   let elReload = document.getElementById("reloadTime") as HTMLInputElement;
@@ -47,7 +47,7 @@ function startReloading() {
     return;
   }
   elMessage.innerHTML = "Success - reloading.";
-  chrome.runtime.sendMessage({
+  await chrome.runtime.sendMessage({
     targetURL: targetURL,
     reloadTime: reloadTime,
     type: "reload",
