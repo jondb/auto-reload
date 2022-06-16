@@ -1,0 +1,23 @@
+{
+  "name": "auto-reload",
+  "version": "1.0.0",
+  "description": "https://chrome.google.com/webstore/detail/auto-reload-target-url/fbofpnajkcpnpillmmfhggjandclmjgj",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jondb/auto-reload.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jondb/auto-reload/issues"
+  },
+  "homepage": "https://github.com/jondb/auto-reload#readme",
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "typescript": "^4.7.3"
+  }
+}
